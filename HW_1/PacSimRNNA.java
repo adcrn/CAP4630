@@ -193,8 +193,8 @@ public class PacSimRNNA implements PacAction
 					// add cost associated with path
 					population.get(j).cost.add(cost[i][j + 1]);
 
-					temp = PacUtils.clonePointList(food);
-					temp.remove(food.get(j));
+					// temp = PacUtils.clonePointList(food);
+					// temp.remove(food.get(j));
 
 					// update each path's cost table
 					population.get(j).table = copy2D(cost);
@@ -318,19 +318,19 @@ public class PacSimRNNA implements PacAction
 		return min;
 	}
 
-	public int frequency(int[][] cost, int row, int lowest)
-	{
-		int frequency = -1;
+	// public int frequency(int[][] cost, int row, int lowest)
+	// {
+	// 	int frequency = -1;
 
-		// loop through row for multiple nearest neighbors
-		for(int i = 1; i < cost.length; i++)
-		{
-			if(cost[row][i] == lowest)
-				frequency++;
-		}
+	// 	// loop through row for multiple nearest neighbors
+	// 	for(int i = 1; i < cost.length; i++)
+	// 	{
+	// 		if(cost[row][i] == lowest)
+	// 			frequency++;
+	// 	}
 
-		return frequency;
-	}
+	// 	return frequency;
+	// }
 
 	public int[][] copy2D(int[][] cost)
 	{
