@@ -2,7 +2,7 @@
 % CAP 4630 - Spring 2018
 % Authors: Nhi Nguyen and Alexander deCurnou
 
-:- module( planner,
+:- module( two_room_planner,
 	   [
 	       plan/4,change_state/3,conditions_met/2,member_state/2,
 	       move/3,go/2,test1/0,test2/0
