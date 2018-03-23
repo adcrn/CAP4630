@@ -5,7 +5,7 @@
 :- module( planner,
 	   [
 	       plan/4,change_state/3,conditions_met/2,member_state/2,
-	       move/3,go/2,test1/0,test2/0,test3/0,test4/0,test5/0
+	       move/3,go/2,test1/0,test2/0
 	   ]).
 
 :- [utils].
