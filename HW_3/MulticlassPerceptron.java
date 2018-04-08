@@ -6,8 +6,6 @@ import weka.classifiers.Classifier;
 import java.text.DecimalFormat;
 import weka.core.*;
 
-import java.lang.Math;
-
 public class MulticlassPerceptron implements weka.classifiers.Classifier
 {
     int bias = 0;
@@ -139,8 +137,8 @@ public class MulticlassPerceptron implements weka.classifiers.Classifier
             }
         }
 
-        double argmax = -1.0;
-        int index = -1;
+        double argmax = activation[0];
+        int index = 0;
         // highest activation value wins
         for(int i = 0; i < activation.length; i++)
         {   
