@@ -3,24 +3,158 @@
 // Authors: Nhi Nguyen and Alexander Decurnou
 
 import weka.classifiers.Classifier;
-import weka.classifiers.Evaluation;
-import weka.classifiers.evaluation.NominalPrediction;
-import weka.classifiers.evaluation.Prediction;
-import weka.core.Instances;
+import java.text.DecimalFormat;
+import weka.core.*;
 
+import java.lang.Math;
 
-public class MulticlassPerceptron implements MulticlassWeka
+public class MulticlassPerceptron implements weka.classifiers.Classifier
 {
-    public static buildClassifer(Instances instances)
+    int bias = 0;
+    String fileName;
+    int epoch = 0;
+    int weightUpdates = 0;
+    double[][] weights;
+        
+    public MulticlassPerceptron(String[] options)
     {
-        // blah
+        // print out required header
+        System.out.println("\nUniversity of Central Florida");
+        System.out.println("CAP4630 Artificial Intelligence - Spring 2018");
+        System.out.println("Multi-Class Perceptron Classifier by Nhi Nguyen and Alexander Decurnou");
+        
+        // initialize bias and parse input commands
+        this.bias = 1;
+        this.fileName = options[0];
+        this.epoch = Integer.parseInt(options[1]);
+    }
+    
+    public void buildClassifier(Instances instances)
+    {
+        // get number or classes and attributes
+        int numClasses = instances.numClasses();
+        int numAttributes = instances.numAttributes();
+
+        // initialize size of weight vector
+        this.weights = new double[numClasses][numAttributes];
+        double[] features = new double[numAttributes];
+
+        // use a weight vector for each class
+        for(int i = 0; i < numClasses; i++)
+        {
+            // initial weight values for all inputs including bias is 0.0
+            // assign last weight in weight vector for the bias value
+            for(int j = 0; j < numAttributes; j++)
+                this.weights[i][j] = 0.0;
+        }
+
+        // run all data over n amount of epochs
+        for(int i = 0; i < this.epoch; i++)
+        {
+            System.out.print("\nEpoch\t" + i + ": ");
+
+            // get number of instances
+            int numInstances = instances.numInstances();
+
+            for(int m = 0; m < numInstances; m++)
+            {
+                // determine correct classification
+                double correctClass = instances.instance(m).value(numAttributes - 1);
+
+                // instantiate feature vector
+                for(int j = 0; j < numAttributes; j++)
+                {
+                    if(j == numAttributes - 1)
+                        features[j] = this.bias;
+                    else
+                        features[j] = instances.instance(m).value(j);
+                }
+
+                // predict with current weights
+                int prediction = predict(instances.instance(m));
+
+                // incorrect
+                if(prediction != correctClass)
+                {
+                    this.weightUpdates++;
+
+                    System.out.print(0);
+
+                    // lower score of wrong answer, and raise score of correct
+                    // answer
+                    for(int j = 0; j < numClasses; j++)
+                    {
+                        if(j == correctClass)
+                        {
+                            for(int k = 0; k < this.weights[j].length; k++)
+                                weights[j][k] += features[k];
+                        }
+
+                        else
+                        {
+                            for(int k = 0; k < this.weights[j].length; k++)
+                                weights[j][k] -= features[k];   
+                        }
+                    }
+                }
+
+                // correct
+                else
+                    System.out.print(1);
+            }
+
+        }
+
+        System.out.println();
     }
 
-    public static predict(Instance instance)
+    public int predict(Instance instance)
     {
-        return class_value;
-    }
+        // get number of classes and attributes
+        int numClasses = instance.numClasses();
+        int numAttributes = instance.numAttributes();
 
+        // instantiate arrays
+        double[] activation = new double[numClasses];
+        double[] features = new double[numAttributes];
+
+        // instantiate feature vector
+        for(int i = 0; i < numAttributes; i++)
+        {
+            if(i == numAttributes - 1)
+                features[i] = this.bias;
+            else
+                features[i] = instance.value(i);
+        }
+
+        // compute activation for each class
+        for(int i = 0; i < numClasses; i++)
+        {
+            activation[i] = 0.0;
+
+            for(int j = 0; j < numAttributes; j++)
+            {
+                // dot product of w(y) and f(x)
+                activation[i] += this.weights[i][j] * features[j];
+            }
+        }
+
+        double argmax = -1.0;
+        int index = -1;
+        // highest activation value wins
+        for(int i = 0; i < activation.length; i++)
+        {   
+            if(activation[i] > argmax)
+            {
+                argmax = activation[i];
+                index = i;
+            }
+        }
+
+        // return class of highest activation
+        return index;
+    }
+    
     public Capabilities getCapabilities()
     {
         return null;
@@ -34,36 +168,37 @@ public class MulticlassPerceptron implements MulticlassWeka
     @Override
     public double[] distributionForInstance(Instance instance)
     {
-        double[] result = new double[data.numClasses()];
+        double[] result = new double[instance.numClasses()];
         result[predict(instance)] = 1;
         return result;
     }
 
     public String toString()
     {
-        System.out.format("Source file: %s", args[0]);
-        System.out.format("Training epochs: %i", args[1]);
-        System.out.format("Total # weight updates = ", num_weight_updates);
-        System.out.println("\nFinal weights:");
-        
-        System.out.format("Class 0 weights: %f %f %f", c0w1, c0w2, c0w3);
-        System.out.format("Class 1 weights: %f %f %f", c1w1, c1w2, c1w3);
-    }
+        DecimalFormat decFormat = new DecimalFormat("#0.000");
+    
+        System.out.println("Source file: " + this.fileName);
+        System.out.println("Training epochs: " + this.epoch);
 
-    public static void main(String[] args throws Exception
-    {
-        System.out.println("University of Central Florida");
-        System.out.println("CAP4630 Artificial Intelligence - Spring 2018");
-        System.out.println("Multi-Class Perceptron Classifier by Nhi Nguyen and Alexander Decurnou");
+        System.out.println("Total # weight updates = " + this.weightUpdates);
+        System.out.println("\nFinal weights: \n");
 
-        // print intermediate epoch results
+        for(int i = 0; i < weights.length; i++)
+        {
+            System.out.print("Class " + i + " weights:  ");
 
-        System.out.println("Results:")
+            for(int j = 0; j < weights[0].length; j++)
+            {
+                if(weights[i][j] >= 0)
+                    System.out.print(" ");
 
-        // print weka output
+                System.out.print(decFormat.format(weights[i][j]) + " ");
+            }
 
-        // print accuracy from MulticlassWeka
+            System.out.println();
+        }
 
-        // print toString output
+
+        return "";
     }
 }
