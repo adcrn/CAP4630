@@ -80,20 +80,11 @@ public class MulticlassPerceptron implements weka.classifiers.Classifier
 
                     // lower score of wrong answer, and raise score of correct
                     // answer
-                    for(int j = 0; j < numClasses; j++)
-                    {
-                        if(j == correctClass)
-                        {
-                            for(int k = 0; k < this.weights[j].length; k++)
-                                weights[j][k] += features[k];
-                        }
+                    for(int j = 0; j < this.weights[0].length; j++)
+                        weights[(int)correctClass][j] += features[j];
 
-                        else
-                        {
-                            for(int k = 0; k < this.weights[j].length; k++)
-                                weights[j][k] -= features[k];   
-                        }
-                    }
+                    for(int j = 0; j < this.weights[0].length; j++)
+                        weights[(int)prediction][j] -= features[j];
                 }
 
                 // correct
