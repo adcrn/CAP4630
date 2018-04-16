@@ -72,22 +72,48 @@ public class Player extends AbstractPlayer
                 }
             }
 
-            // Before we go exploring for food in this enemy territory,
-            // we need to make sure we aren't going to be putting ourselves in _immediate_ danger.
-            PacFace face = run_away(grid, p);
-            if (face != null)
-                return face;
-
             // Now that we're not in immediate danger, let's go find food.
-            return advance_food(grid, p, faces);
+            return advance_pacman(grid, p, faces);
         }
 
     }
 
-    private PacFace advance_food(PacCell[][] grid, Point p, PacFace[] faces)
+    private PacFace advance_pacman(PacCell[][] grid, Point p, PacFace[] faces)
     {
-        // Determine opposing team color and nearest food item.
+        /*
+         * Pacmen should value self-preservation over food. It will move when
+         * there is a ghost within a certain distance. Other than that, it
+         * will go for the closest food pellet.
+         */
+
         PacTeam opp = PacUtils.opposingTeam(morphTeam);
+        List<Point> enemies = PacUtils.findMorphs(grid, opp);
+
+        // If there are opposing enemy morphs...
+        if (!enemies.isEmpty())
+        {
+            // for each enemy morph...
+            for (Point enemy : enemies)
+            {
+                // If there is indeed an enemy morph and it is a ghost...
+                if ((enemy != null)
+                    && ((MorphCell) grid[enemy.x][enemy.y]).getMode() == MorphMode.GHOST)
+                {
+                    // let's get the hell out of dodge if it's within three units away
+                    List<Point> temp = BFSPath.getPath(grid, p, enemy);
+                    if (temp.size() <= 3)
+                    {
+                        // by choosing a direction that isn't in the path of a ghost or wall.
+                        PacFace face = PacUtils.avoidTarget(p, enemy, grid);
+                        
+                        if (face != null)
+                            return face;
+                    }
+                }
+            }
+        }
+
+        // Determine opposing team color and nearest food item.
         Point goal = PacUtils.nearestFood(grid, p, opp);
 
         // Get path to the nearest food and
@@ -106,6 +132,13 @@ public class Player extends AbstractPlayer
 
     private PacFace advance_ghost(PacCell[][] grid, Point p)
     {
+        /*
+         * Ghosts should look for enemies first and if there are no
+         * enemy Pacmen on the board. If so, the primary objective is to
+         * protect pellets by eating enemies. If there are no enemies, then
+         * the new objective is to move to the nearest morph.
+         */
+
         // Find all enemy morphs.
         PacTeam opp = PacUtils.opposingTeam(morphTeam);
         List<Point> enemies = PacUtils.findMorphs(grid, opp);
@@ -133,9 +166,10 @@ public class Player extends AbstractPlayer
             }
         }
 
+        // Find nearest enemy morph.
         Point goal = PacUtils.nearestMorph(grid, p, opp);
 
-        // Get path to the nearest food and
+        // Get path to the nearest enemy morph and
         // return correct direction towards goal.
         List<Point> temp = BFSPath.getPath(grid, p, goal);
         Point next_step = temp.remove(0);
@@ -143,39 +177,6 @@ public class Player extends AbstractPlayer
         
         if (face != null)
             return face;
-
-        return null;
-    }
-
-    private PacFace run_away(PacCell[][] grid, Point p)
-    {
-        // Find all enemy morphs.
-        PacTeam opp = PacUtils.opposingTeam(morphTeam);
-        List<Point> enemies = PacUtils.findMorphs(grid, opp);
-
-        // If there are opposing enemy morphs...
-        if (!enemies.isEmpty())
-        {
-            // for each enemy morph...
-            for (Point enemy : enemies)
-            {
-                // If there is indeed an enemy morph and it is a ghost...
-                if ((enemy != null)
-                    && ((MorphCell) grid[enemy.x][enemy.y]).getMode() == MorphMode.GHOST)
-                {
-                    // let's get the hell out of dodge if it's within three units away
-                    List<Point> temp = BFSPath.getPath(grid, p, enemy);
-                    if (temp.size() <= 3)
-                    {
-                        // by choosing a direction that isn't in the path of a ghost or wall.
-                        PacFace face = PacUtils.randomOpenForPacman(p, grid);
-                        
-                        if (face != null)
-                            return face;
-                    }
-                }
-            }
-        }
 
         return null;
     }
