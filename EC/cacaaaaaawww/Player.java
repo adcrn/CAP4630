@@ -50,11 +50,11 @@ public class Player extends AbstractPlayer
 
             // If there are no opposing Pacman in each
             // of adjacent cells, let's _try_ to eat them.
-            PacFace face = advance_ghost(grid, p);
+            //PacFace face = advance_ghost(grid, p);
 
             // If there is no Pacman, then there's bound to be one
             // at some point and they need food, so let's go to the food.
-            return advance_food(grid, p, faces);
+            return advance_ghost(grid, p);
         }
         // Otherwise, we're a Pacman, so let's go eat.
         else
@@ -93,11 +93,13 @@ public class Player extends AbstractPlayer
         // Get path to the nearest food and
         // return correct direction towards goal.
         List<Point> temp = BFSPath.getPath(grid, p, goal);
-        Point next_step = temp.remove(0);
-        PacFace face = PacUtils.direction(p, next_step);
-        
-        if (face != null)
-            return face;
+        if (!temp.isEmpty())
+        {
+            Point next_step = temp.remove(0);
+            PacFace face = PacUtils.direction(p, next_step);
+            if (face != null)
+                return face;
+        }
 
         return null;
     }
@@ -130,6 +132,17 @@ public class Player extends AbstractPlayer
                 }
             }
         }
+
+        Point goal = PacUtils.nearestMorph(grid, p, opp);
+
+        // Get path to the nearest food and
+        // return correct direction towards goal.
+        List<Point> temp = BFSPath.getPath(grid, p, goal);
+        Point next_step = temp.remove(0);
+        PacFace face = PacUtils.direction(p, next_step);
+        
+        if (face != null)
+            return face;
 
         return null;
     }
