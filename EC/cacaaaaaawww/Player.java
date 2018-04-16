@@ -20,7 +20,7 @@ public class Player extends AbstractPlayer
     @Override
     public void init()
     {
-        System.out.println(morphTeam + " " + morphID + "CACAAAAAAWWW");
+        System.out.println(morphTeam + " " + morphID + " CACAAAAAAWWW");
     }
 
     @Override
@@ -154,8 +154,8 @@ public class Player extends AbstractPlayer
                     List<Point> temp = BFSPath.getPath(grid, p, enemy);
                     if (temp.size() <= 3)
                     {
-                        // by choosing a direction that maximizes the distance from the enemy.
-                        PacFace face = PacUtils.avoidTarget(p, enemy, grid);
+                        // by choosing a direction that isn't in the path of a ghost or wall.
+                        PacFace face = PacUtils.randomOpenForPacman(p, grid);
                         
                         if (face != null)
                             return face;
